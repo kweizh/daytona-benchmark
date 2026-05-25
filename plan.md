@@ -1,57 +1,63 @@
+# Daytona Evaluation Dataset Research
 ### 1. Library Overview
-* **Description**: `jj` (Jujutsu) is a modern, Git-compatible version control system (VCS) designed for speed, safety, and a superior developer experience. It simplifies the Git model by treating the working copy as a permanent commit, eliminating the staging area, and providing "first-class" conflict management where conflicts can be committed and resolved later.
-* **Ecosystem Role**: It acts as a powerful alternative CLI for Git repositories. It uses a Git backend by default, allowing developers to use `jj` locally while interacting with standard Git remotes (GitHub, GitLab, etc.). It competes with tools like `git-branchless` and `sl` (Sapling).
-* **Installation**: jj could be installed by following command:
-
-```bash
-curl -fsSL \
-    https://github.com/jj-vcs/jj/releases/download/v0.38.0/jj-v0.38.0-x86_64-unknown-linux-musl.tar.gz | \
-    tar -xz -C /usr/local/bin ./jj && \
-    chmod +x /usr/local/bin/jj
+*   **Description**: Daytona is an open-source development environment manager that automates the creation of fully configured development environments (sandboxes) on any infrastructure (local, remote, or cloud). It provides a secure, isolated runtime for both human developers and AI-generated code.
+*   **Ecosystem Role**: It serves as an alternative to GitHub Codespaces or Gitpod, offering more flexibility by being self-hostable and provider-agnostic. It is increasingly used as a "Compute Plane" for AI agents to execute code safely.
+*   **Project Setup**:
+    1.  **Install CLI**: `curl -sfL get.daytona.io | sudo bash`
+    2.  **Start Server**: `daytona server` (Initializes the daemon and local container registry).
+    3.  **Configure Profile**: `daytona profile add` (Connects the CLI to a server).
+    4.  **Install Provider**: `daytona provider install docker` (Installs the infrastructure driver).
+    5.  **Create Workspace**: `daytona create https://github.com/user/repo`
+### 2. Core Primitives & APIs
+*   **Workspaces/Sandboxes**: Isolated Linux environments with dedicated CPU/RAM/Disk.
+*   **Providers**: Infrastructure drivers (Docker, AWS, DigitalOcean, Azure, GCP, etc.).*   **Toolbox API**: A REST API running inside each sandbox for low-level operations.
+*   **SDKs**: Programmatic interfaces for Python and TypeScript.
+**Code Snippet: Creating a Sandbox (TypeScript SDK)**
+```typescript
+import { Daytona, DaytonaConfig } from '@daytonaio/sdk';
+const daytona = new Daytona(new DaytonaConfig({
+  apiKey: process.env.DAYTONA_API_KEY,
+  serverUrl: 'https://app.daytona.io/api'
+}));
+const sandbox = await daytona.create({
+  language: 'typescript',
+  image: 'node:20'
+});
+const response = await sandbox.process.codeRun('console.log("Hello from Daytona!")');
+console.log(response.result);
+await daytona.delete(sandbox);
 ```
-
-* **Project Setup**:
-    * **Initialize a new Git-compatible repo**: `jj git init --colocate` (creates a `.jj` directory alongside a `.git` directory in the current folder).
-    * **Clone an existing repo**: `jj git clone <url>` (clones a Git repo and initializes it for `jj`).
-    * **Identity configuration**: `jj config set --user user.name "Your Name"` and `jj config set --user user.email "your@email.com"`.
-### 2. Core Primitives & APIs* **Working Copy as Commit (`@`)**: In `jj`, the working copy is always a commit. Any file change is automatically recorded in the current commit when you run any `jj` command.
-    * [Working Copy Docs](https://docs.jj-vcs.dev/latest/tutorial/#the-working-copy)
-* **Change ID vs. Commit ID**: A **Change ID** (e.g., `qpvz`) is stable and persists across rebases/rewrites. A **Commit ID** (Git SHA, e.g., `a1b2c3d4`) changes whenever the commit content or parent changes.
-    * [Change/Commit IDs](https://docs.jj-vcs.dev/latest/tutorial/#commit-ids-and-change-ids)
-* **Revsets**: A functional query language for selecting revisions.
-    * `jj log -r '@-'` (Parent of working copy)
-    * `jj log -r 'main..@'` (Commits in current branch not in main)
-    * `jj log -r 'author("Alice") & description("fix")'` (Search by author and message)
-    * [Revset Reference](https://docs.jj-vcs.dev/latest/revsets/)
-* **Operation Log & Undo**: Every repository operation (commit, rebase, push) is recorded and can be reverted.
-    * `jj op log` (View history of operations)
-    * `jj undo` (Undo the last operation)
-    * [Operation Log Docs](https://docs.jj-vcs.dev/latest/operation-log/)
-* **First-class Conflicts**: Conflicts are stored in the commit graph. You can rebase a commit with conflicts, and the conflicts will propagate to descendants until resolved.
-    * `jj resolve` (Tools to help resolve conflicts)
-    * [Conflict Management](https://docs.jj-vcs.dev/latest/conflicts/)
+[SDK Documentation](https://www.daytona.io/docs/en/tools/sdk)
+**CLI Usage: Managing Workspaces**
+```bash
+# List all workspaces
+daytona list
+# SSH into a workspace
+daytona ssh <workspace-id>
+# Forward a port
+daytona forward <workspace-id> 3000
+```
+[CLI Reference](https://www.daytona.io/docs/en/tools/cli)
 ### 3. Real-World Use Cases & Templates
-* **Stacking Changes for PRs**: `jj` makes it easy to manage a "stack" of small commits. You can edit any commit in the stack with `jj edit <change_id>`, and all descendants will automatically rebase.
-* **GitHub Workflow**: `jj` integrates with GitHub via bookmarks (branches). To push a PR:
-    1. `jj bookmark create my-feature`
-    2. `jj git push`
-* **Templates**: Customize output formatting (e.g., for `jj log`).
-    * `jj log -T 'commit_id.short() ++ " " ++ description.first_line()'`
-    * [Template Language](https://docs.jj-vcs.dev/latest/templates/)
+*   **AI Code Execution**: Using the `daytona-sdk` to run untrusted code in a sandbox.
+*   **Ephemeral PR Environments**: Automatically spinning up a workspace for every Pull Request.
+*   **Standardized Onboarding**: Using a `devcontainer.json` or `Dockerfile` to ensure a consistent environment across a team.
+*   **Example Project**: [Daytona Samples](https://github.com/daytonaio/daytona-proxy-samples) - Demonstrates custom proxy and sandbox configurations.
 ### 4. Developer Friction Points
-* **Pushing requires Bookmarks**: Unlike Git, where you are always "on" a branch, `jj` allows "anonymous" commits. New users often forget to create a bookmark before trying to `jj git push`, leading to "nothing to push" errors.
-* **Conflict Markers in Commits**: Users might accidentally commit conflict markers (`<<<<<<<`) if they don't realize that `jj` allows committing "unresolved" states. Understanding that a commit *with* conflicts is valid but "broken" is a mental shift.
-* **Revset Syntax Complexity**: Distinguishing between `..` (range) and `::` (DAG range/ancestors) can be tricky for beginners.
+*   **SSH Stability**: Users report occasional terminal rendering issues and connection timeouts when using `daytona ssh` ([Issue #982](https://github.com/daytonaio/daytona/issues/982)).
+*   **VS Code Dependency**: The `daytona code` command relies on the local VS Code CLI being correctly installed and in the PATH, which can fail silently ([Issue #1216](https://github.com/daytonaio/daytona/issues/1216)).
+*   **Auth0/OIDC Complexity**: Configuring self-hosted instances with custom OIDC providers for organization-level multi-tenancy can be challenging.
 ### 5. Evaluation Ideas
-* **Conflict Resolution**: Perform a rebase that creates a conflict, then resolve it by editing the file and observe the automatic "resolution" in the next `jj st`.
-* **History Rewriting**: Use `jj edit` on a commit 3 levels deep in a stack, change a file, and verify all 3 descendant commits were automatically rebased.
-* **Operation Recovery**: Accurately describe the state of the repo after performing 5 distinct operations, then use `jj undo` to return to the state after the 2nd operation.
-* **Revset Querying**: Write a revset to find all commits authored by "Bob" that are not reachable from the `main` bookmark but are ancestors of the current working copy.
-* **Commit Splitting**: Use `jj split` to take a single commit with changes in two different files and turn it into two separate commits.
-* **Git Integration**: Successfully clone a Git repo, create a bookmark, and push it to a remote using only `jj` commands.
+*   **CLI**: Initialize a Daytona server and create a workspace from a public GitHub repository.
+*   **SDK**: Programmatically create a sandbox, install a specific npm package, and verify its version.
+*   **Dashboard (Browser)**: Log in to the Daytona Dashboard and verify that a newly created workspace appears in the "Active" list.
+*   **Integration**: Add a custom environment variable via the CLI and verify it is accessible inside the sandbox via `env`.
+*   **Configuration**: Install and configure the AWS provider and deploy a workspace to an EC2 instance.
+*   **Advanced**: Use the "Computer Use" API to start a VNC session and take a screenshot of a running web server inside the sandbox.
+*   **Git**: Authenticate a private Git provider and clone a private repository into a new Daytona workspace.
 ### 6. Sources
-1. [Jujutsu Official Documentation](https://docs.jj-vcs.dev/latest/) - Primary source for all concepts and commands.
-2. [Jujutsu GitHub Repository](https://github.com/jj-vcs/jj) - Source for issue tracking and architecture details.
-3. [Jujutsu Tutorial (Bird's Eye View)](https://docs.jj-vcs.dev/latest/tutorial/) - Step-by-step guide for new users.
-4. [Revset Language Reference](https://docs.jj-vcs.dev/latest/revsets/) - Detailed syntax for the query language.
-5. [GitHub Discussions (Common Issues)](https://github.com/jj-vcs/jj/discussions) - Source for developer friction points and UX challenges.
+1. [Daytona Official Documentation](https://www.daytona.io/docs/en/) - Main documentation hub.
+2. [Daytona GitHub Repository](https://github.com/daytonaio/daytona) - Source code and issue tracker.
+3. [Daytona SDK (TypeScript)](https://github.com/daytonaio/sdk) - SDK for programmatic control.
+4. [Daytona CLI Reference](https://www.daytona.io/docs/en/tools/cli/) - Detailed CLI command list.
+5. [Daytona llms-full.txt](https://www.daytona.io/llms-full.txt) - Comprehensive documentation dump for LLMs.
