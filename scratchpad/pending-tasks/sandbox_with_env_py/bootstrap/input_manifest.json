@@ -1,0 +1,7 @@
+{
+  "library_name": "Daytona Python SDK",
+  "task_name": "sandbox_with_env_py",
+  "complexity_level": "simple set of 2-5 commands",
+  "research_plan_path": "plan.md",
+  "output_dir": "scratchpad/pending-tasks"
+}
