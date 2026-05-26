@@ -1,7 +1,0 @@
-{
-  "library_name": "Daytona",
-  "task_name": "volume_attach_py",
-  "complexity_level": "multi-step sequential command set",
-  "research_plan_path": "plan.md",
-  "output_dir": "scratchpad/pending-tasks/"
-}

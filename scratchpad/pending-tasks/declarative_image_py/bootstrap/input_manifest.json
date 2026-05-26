@@ -1,7 +1,0 @@
-{
-  "library_name": "Daytona",
-  "task_name": "declarative_image_py",
-  "complexity_level": "multi-step parallel command set",
-  "research_plan_path": "plan.md",
-  "output_dir": "scratchpad/pending-tasks"
-}
