@@ -1,4 +1,0 @@
-1:"$Sreact.fragment"
-2:I[36064,["/daytona-benchmark/_next/static/chunks/d2c13bb33c4fcd54.js","/daytona-benchmark/_next/static/chunks/c21188132e0e0d48.js"],"default"]
-3:I[81497,["/daytona-benchmark/_next/static/chunks/d2c13bb33c4fcd54.js","/daytona-benchmark/_next/static/chunks/c21188132e0e0d48.js"],"default"]
-0:{"buildId":"gRS6uHm1x9e-0DUI44asp","rsc":["$","$1","c",{"children":[null,["$","$L2",null,{"parallelRouterKey":"children","template":["$","$L3",null,{}]}]]}],"loading":null,"isPartial":false}
