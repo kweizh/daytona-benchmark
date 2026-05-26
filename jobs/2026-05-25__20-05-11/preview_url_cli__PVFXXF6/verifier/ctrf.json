@@ -1,0 +1,64 @@
+{
+    "results": {
+        "tool": {
+            "name": "pytest",
+            "version": "7.4.4"
+        },
+        "summary": {
+            "tests": 4,
+            "passed": 3,
+            "failed": 1,
+            "skipped": 0,
+            "pending": 0,
+            "other": 0,
+            "start": 1779714327926,
+            "stop": 1779714329086
+        },
+        "environment": {
+            "buildName": "Pytest JSON CTRF Report",
+            "buildNumber": "000",
+            "buildUrl": "https://ctrf.io"
+        },
+        "tests": [
+            {
+                "name": "test_final_state.py::test_output_log_exists",
+                "status": "passed",
+                "duration": 0,
+                "start": 1779714327941,
+                "stop": 1779714327941,
+                "retries": 0,
+                "file_path": "test_final_state.py"
+            },
+            {
+                "name": "test_final_state.py::test_output_log_contains_preview_url",
+                "status": "passed",
+                "duration": 1,
+                "start": 1779714327941,
+                "stop": 1779714327942,
+                "retries": 0,
+                "file_path": "test_final_state.py"
+            },
+            {
+                "name": "test_final_state.py::test_preview_response_contains_expected_marker",
+                "status": "passed",
+                "duration": 1,
+                "start": 1779714327942,
+                "stop": 1779714327943,
+                "retries": 0,
+                "file_path": "test_final_state.py"
+            },
+            {
+                "name": "test_final_state.py::test_sandbox_exists_in_daytona_account",
+                "status": "failed",
+                "raw_status": "call_failed",
+                "duration": 1143,
+                "start": 1779714327943,
+                "stop": 1779714329086,
+                "retries": 0,
+                "file_path": "test_final_state.py",
+                "trace": "def test_sandbox_exists_in_daytona_account():\n        api_key = os.environ.get(\"DAYTONA_API_KEY\")\n        assert api_key, \"DAYTONA_API_KEY environment variable must be set for verification.\"\n    \n        login = subprocess.run(\n            [\"daytona\", \"login\", \"--api-key\", api_key],\n            capture_output=True,\n            text=True,\n        )\n        assert login.returncode == 0, (\n            f\"'daytona login' failed during verification. \"\n            f\"stdout: {login.stdout}\\nstderr: {login.stderr}\"\n        )\n    \n        result = subprocess.run(\n            [\"daytona\", \"list\", \"--format\", \"json\"],\n            capture_output=True,\n            text=True,\n        )\n        assert result.returncode == 0, (\n            f\"'daytona list --format json' failed. \"\n            f\"stdout: {result.stdout}\\nstderr: {result.stderr}\"\n        )\n    \n        try:\n            sandboxes = json.loads(result.stdout)\n        except json.JSONDecodeError as exc:\n            pytest.fail(\n                f\"Could not parse 'daytona list --format json' output as JSON: {exc}\\n\"\n                f\"stdout was:\\n{result.stdout}\"\n            )\n    \n>       assert isinstance(sandboxes, list), (\n            f\"Expected 'daytona list --format json' to return a JSON array, \"\n            f\"got: {type(sandboxes).__name__}\"\n        )\nE       AssertionError: Expected 'daytona list --format json' to return a JSON array, got: dict\nE       assert False\nE        +  where False = isinstance({'items': [{'autoArchiveInterval': 10080, 'autoDeleteInterval': -1, 'autoStopInterval': 15, 'backupState': 'InProgress...': 10080, 'autoDeleteInterval': -1, 'autoStopInterval': 15, 'backupState': 'Completed', ...}, ...], 'nextCursor': None}, list)\n\ntests/test_final_state.py:92: AssertionError",
+                "message": "The test failed in the call phase due to an assertion error"
+            }
+        ]
+    }
+}

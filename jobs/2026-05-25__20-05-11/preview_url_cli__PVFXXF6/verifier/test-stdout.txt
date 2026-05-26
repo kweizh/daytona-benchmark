@@ -1,0 +1,59 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-7.4.4, pluggy-1.4.0
+rootdir: /tests
+plugins: json-ctrf-0.5.0
+collected 4 items
+
+tests/test_final_state.py ...F                                           [100%]
+
+=================================== FAILURES ===================================
+____________________ test_sandbox_exists_in_daytona_account ____________________
+
+    def test_sandbox_exists_in_daytona_account():
+        api_key = os.environ.get("DAYTONA_API_KEY")
+        assert api_key, "DAYTONA_API_KEY environment variable must be set for verification."
+    
+        login = subprocess.run(
+            ["daytona", "login", "--api-key", api_key],
+            capture_output=True,
+            text=True,
+        )
+        assert login.returncode == 0, (
+            f"'daytona login' failed during verification. "
+            f"stdout: {login.stdout}\nstderr: {login.stderr}"
+        )
+    
+        result = subprocess.run(
+            ["daytona", "list", "--format", "json"],
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, (
+            f"'daytona list --format json' failed. "
+            f"stdout: {result.stdout}\nstderr: {result.stderr}"
+        )
+    
+        try:
+            sandboxes = json.loads(result.stdout)
+        except json.JSONDecodeError as exc:
+            pytest.fail(
+                f"Could not parse 'daytona list --format json' output as JSON: {exc}\n"
+                f"stdout was:\n{result.stdout}"
+            )
+    
+>       assert isinstance(sandboxes, list), (
+            f"Expected 'daytona list --format json' to return a JSON array, "
+            f"got: {type(sandboxes).__name__}"
+        )
+E       AssertionError: Expected 'daytona list --format json' to return a JSON array, got: dict
+E       assert False
+E        +  where False = isinstance({'items': [{'autoArchiveInterval': 10080, 'autoDeleteInterval': -1, 'autoStopInterval': 15, 'backupState': 'InProgress...': 10080, 'autoDeleteInterval': -1, 'autoStopInterval': 15, 'backupState': 'Completed', ...}, ...], 'nextCursor': None}, list)
+
+tests/test_final_state.py:92: AssertionError
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED tests/test_final_state.py::test_output_log_exists
+PASSED tests/test_final_state.py::test_output_log_contains_preview_url
+PASSED tests/test_final_state.py::test_preview_response_contains_expected_marker
+FAILED tests/test_final_state.py::test_sandbox_exists_in_daytona_account - As...
+========================= 1 failed, 3 passed in 1.16s ==========================
