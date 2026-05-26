@@ -37,6 +37,27 @@ daytona ssh <workspace-id>
 # Forward a port
 daytona forward <workspace-id> 3000
 ```
+
+In CLI json format output, now it return a object, for example, `daytona list --format json` would return:
+
+```json
+{
+  "items": [
+    {
+      "autoArchiveInterval": 10080,
+      "autoDeleteInterval": -1,
+      "autoStopInterval": 15,
+      "backupState": "Completed",
+      "cpu": 1,
+      "createdAt": "2026-05-07T02:26:35.538Z",
+      "updatedAt": "2026-05-14T02:42:22.718Z",
+      "user": "daytona"
+    }
+  ],
+  "nextCursor": null
+}
+```
+
 [CLI Reference](https://www.daytona.io/docs/en/tools/cli)
 ### 3. Real-World Use Cases & Templates
 *   **AI Code Execution**: Using the `daytona-sdk` to run untrusted code in a sandbox.
